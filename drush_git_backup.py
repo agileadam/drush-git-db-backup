@@ -18,20 +18,12 @@ parser.add_argument("-s", "--scan-dir", dest="scandir", required=True,
 parser.add_argument("-d", "--target-dir", dest="targetdir", required=True,
                   help="write files to specific directory (the git working directory)",
                   metavar="DIRECTORY")
-parser.add_argument("-o", "--output-file", dest="outputfile",
-                  help="write report to specific FILE", metavar="FILE")
 parser.add_argument("-t", "--traverse", dest="traverse", default=0, type=int,
                   help="how many levels deep to scan for drupal sites", metavar="N")
 parser.add_argument("-q", "--quiet",
                   action="store_false", dest="verbose", default=True,
                   help="do not show output")
 args = parser.parse_args()
-
-# Exit as early as possible; if output file
-# already exists, exit with message
-if args.outputfile:
-    if os.path.exists(args.outputfile):
-        sys.exit("The file specified already exists!")
 
 # Emulate the which binary
 # http://stackoverflow.com/a/377028
@@ -70,29 +62,15 @@ def processDir(dir):
     if results:
         if args.verbose:
             print results
-        if args.outputfile:
-            f.write(dir + "\n ")
     os.chdir(args.scandir)
-
-TEMPFILE = '/tmp/allbackups.txt'
 
 # Clean up the paths to fix any problems we might
 # have with user paths (--target-dir=~/xyz won't work otherwise)
 args.targetdir = os.path.expanduser(args.targetdir)
-if args.targetdir:
-    args.targetdir = os.path.expanduser(args.targetdir)
 
 # Clean up the paths to fix any problems we might
 # have with user paths (--dir=~/xyz won't work otherwise)
 args.scandir = os.path.expanduser(args.scandir)
-if args.outputfile:
-    args.outputfile = os.path.expanduser(args.outputfile)
-
-# We need to write to a temp file if -m OR -f are used!
-if args.outputfile:
-    if os.path.exists(TEMPFILE):
-        os.remove(TEMPFILE)
-    f = open(TEMPFILE, 'w')
 
 # Store the directory from which the user is executing this script
 # so we can store a file (if they use -f/--file) relative to this directory
@@ -109,16 +87,5 @@ while (count <= args.traverse):
     for name in glob.glob(wildcards + 'sites/all/modules'):
         processDir(name.replace('/sites/all/modules', ''))
 
-if args.outputfile:
-    f.close()
-
 # Move back to where the user started
 os.chdir(origdir)
-
-# Create the final file (move it from its temporary directory)
-if args.outputfile:
-    os.system("mv %s %s" % (TEMPFILE, args.outputfile))
-
-# Just in case the user doesn't want this hanging around
-if os.path.exists(TEMPFILE):
-    os.remove(TEMPFILE)
