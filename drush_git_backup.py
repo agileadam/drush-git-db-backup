@@ -1,9 +1,4 @@
 #!/usr/bin/env python
-#
-# Cronjob example (single line):
-# /usr/local/bin/python2.7 /usr/local/bin/drush_backup_git.py --scan-dir=/webapps/
-#      --target-dir=/db_backups/ -t 1 | mail -s "Drush DB Backup on server123" agileadam@gmail.com
-
 import sys
 import os
 import subprocess
