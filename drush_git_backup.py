@@ -48,7 +48,7 @@ def which(program):
 # Look for Drush and store its location; quit if we cannot find it
 drush_app = which('drush')
 if drush_app == None:
-    sys.exit("Couldn't not find the Drush application in $PATH. If you are \
+    sys.exit("ERROR: Could not find the Drush application in $PATH. If you are \
 running this from a cronjob, try setting cron's PATH to include the drush \
 application.")
 
@@ -81,6 +81,12 @@ args.targetdir = os.path.expanduser(args.targetdir)
 # Clean up the paths to fix any problems we might
 # have with user paths (--dir=~/xyz won't work otherwise)
 args.scandir = os.path.expanduser(args.scandir)
+
+if not os.path.exists(args.targetdir):
+    sys.exit("ERROR: Could not find the target directory.")
+
+if not os.path.exists(args.scandir):
+    sys.exit("ERROR: Could not find the scan directory.")
 
 # Store the directory from which the user is executing this script
 # so we can store a file (if they use -f/--file) relative to this directory
