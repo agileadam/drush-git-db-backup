@@ -23,6 +23,8 @@ parser.add_argument("-t", "--traverse", dest="traverse", default=0, type=int,
 parser.add_argument("-q", "--quiet",
                   action="store_false", dest="verbose", default=True,
                   help="do not show output")
+parser.add_argument("-c", "--commit", dest="docommit", default=False,
+                  action="store_true", help="automatically add and commit the backup file changes")
 args = parser.parse_args()
 
 # Emulate the which binary
@@ -49,6 +51,14 @@ if drush_app == None:
     sys.exit("Couldn't not find the Drush application in $PATH. If you are \
 running this from a cronjob, try setting cron's PATH to include the drush \
 application.")
+
+if args.docommit:
+    # Look for Git and store its location; quit if we cannot find it
+    git_app = which('git')
+    if git_app == None:
+        sys.exit("ERROR: Could not find the Git application in $PATH. If you are \
+    running this from a cronjob, try setting cron's PATH to include the git \
+    application.")
 
 # Process a Drupal directory (dir MUST be a Drupal directory
 # as we're not checking this here!)
@@ -86,6 +96,30 @@ while (count <= args.traverse):
     wildcards = '*/' * count
     for name in glob.glob(wildcards + 'sites/all/modules'):
         processDir(name.replace('/sites/all/modules', ''))
+
+# If the user used the --commit option, git add and commit the files
+if args.docommit:
+    os.chdir(args.targetdir)
+
+    # Stage all of the new/changed files
+    gitadd = subprocess.Popen([git_app, 'add', '*.sql'],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT,
+                             )
+    gitadd_results = gitadd.stdout.read()
+    if gitadd_results:
+        if args.verbose:
+            print gitadd_results
+
+    # Commit all of the changes with a message
+    gitcommit = subprocess.Popen([git_app, 'commit', '-a', '-m', 'Automatic commit'],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT,
+                             )
+    gitcommit_results = gitcommit.stdout.read()
+    if gitcommit_results:
+        if args.verbose:
+            print gitcommit_results
 
 # Move back to where the user started
 os.chdir(origdir)
