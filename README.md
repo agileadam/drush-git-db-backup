@@ -13,7 +13,7 @@ One of the main reasons to use a script like this is to have automatic, daily gi
 
 *If you're running the script from a cronjob, make sure that Drush and Git are somewhere in the cron user's $PATH.*
 
-Here's an example cronjob.
+Here's an example cronjob (all on a single line):
 
 * It runs every day at 02:15
 * The output is emailed to agileadam@gmail.com
@@ -22,4 +22,6 @@ Here's an example cronjob.
 * The --target-dir is a git repository
 * The backed-up files will be automatically added / committed to git
 
-<code>15  2   *   *   *   /usr/local/bin/python2.7 /usr/local/bin/drush_backup_git.py --commit --scan-dir=/webapps/ --target-dir=/db_backups/ -t 1 | mail -s "Drush DB Backup on server123" agileadam@gmail.com</code>
+<code>15  2   *   *   *   /usr/local/bin/python2.7 /usr/local/bin/drush_backup_git.py</code>
+<code>--commit --scan-dir=/webapps/ --target-dir=/db_backups/</code>
+<code>-t 1 | mail -s "Drush DB Backup on server123" agileadam@gmail.com</code>
