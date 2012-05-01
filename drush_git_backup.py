@@ -10,7 +10,7 @@ import subprocess
 import argparse
 import glob
 
-parser = argparse.ArgumentParser(description='Automatically backs up Drupal site databases and commits the changes to a git repo. Outputs a report (to screen or file) that shows the success/failure of each backup. A popular implementation is to run this via a cronjob and pipe the command to a mail application to email the output. View the source code for more help!')
+parser = argparse.ArgumentParser(description='Automatically backs up Drupal site databases and commits the changes to a git repo. A useful implementation is to run this via a cronjob and pipe the command to a mail application to email the output. View the source code for more help!')
 parser.add_argument("-s", "--scan-dir", dest="scandir", required=True,
                   help="which directory contains your drupal sites (you can optionally \
                   traverse deeper from this root directory using the -t/--traverse argument)",
@@ -75,11 +75,8 @@ def processDir(dir):
     os.chdir(args.scandir)
 
 # Clean up the paths to fix any problems we might
-# have with user paths (--target-dir=~/xyz won't work otherwise)
+# have with user paths (e.g., --target-dir=~/xyz won't work otherwise)
 args.targetdir = os.path.expanduser(args.targetdir)
-
-# Clean up the paths to fix any problems we might
-# have with user paths (--dir=~/xyz won't work otherwise)
 args.scandir = os.path.expanduser(args.scandir)
 
 if not os.path.exists(args.targetdir):
@@ -89,7 +86,6 @@ if not os.path.exists(args.scandir):
     sys.exit("ERROR: Could not find the scan directory.")
 
 # Store the directory from which the user is executing this script
-# so we can store a file (if they use -f/--file) relative to this directory
 origdir = os.getcwd()
 
 # Move to the directory that contains the Drupal sites
