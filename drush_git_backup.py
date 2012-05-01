@@ -60,7 +60,7 @@ if args.docommit:
 def processDir(dir):
     os.chdir(dir)
     drush = subprocess.Popen([drush_app, 'sql-dump', '--ordered-dump', '--nocolor',
-                              '--result-file=' + args.targetdir + '/' + dir + '.sql'],
+                              '--result-file=' + args.targetdir.rstrip('/') + '/' + dir + '.sql'],
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
                              )
