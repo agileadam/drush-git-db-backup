@@ -4,6 +4,7 @@ import os
 import subprocess
 import argparse
 import glob
+import re
 
 parser = argparse.ArgumentParser(description='Automatically backs up Drupal site databases and commits the changes to a git repo. A useful implementation is to run this via a cronjob and pipe the command to a mail application to email the output. View the source code for more help!')
 parser.add_argument("-s", "--scan-dir", dest="scandir", required=True,
@@ -20,6 +21,8 @@ parser.add_argument("-q", "--quiet",
                   help="do not show output")
 parser.add_argument("-c", "--commit", dest="docommit", default=False,
                   action="store_true", help="automatically add and commit the backup file changes")
+parser.add_argument("--use-dirname", dest="usedirname", default=False,
+                  action="store_true", help="output files as dirname.sql instead of using the database name (websites/mysite  -> websites_mysite.sql)")
 args = parser.parse_args()
 
 # Emulate the which binary
@@ -59,12 +62,27 @@ if args.docommit:
 # as we're not checking this here!)
 def processDir(dir):
     os.chdir(dir)
-    drush = subprocess.Popen([drush_app, 'sql-dump', '--ordered-dump', '--nocolor',
-                              '--result-file=' + args.targetdir.rstrip('/') + '/' + dir + '.sql'],
+
+    if args.usedirname:
+        filename = dir.replace('/', '_')
+    else:
+        drushdb = subprocess.Popen([drush_app, 'sql-conf'],
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT,
+                                 )
+        drushdb_results = drushdb.stdout.read()
+        dbname_search = re.search("\[database\] => (.*)", drushdb_results, re.MULTILINE)
+        if dbname_search == None:
+            sys.exit("ERROR: Could not get database name for site at " + dir)
+        else:
+            filename = dbname_search.group(1)
+
+    drushdump = subprocess.Popen([drush_app, 'sql-dump', '--ordered-dump', '--nocolor',
+                              '--result-file=' + args.targetdir.rstrip('/') + '/' + filename + '.sql'],
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
                              )
-    results = drush.stdout.read()
+    results = drushdump.stdout.read()
     if results:
         if args.verbose:
             print results
