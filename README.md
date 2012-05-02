@@ -22,6 +22,6 @@ Here's an example cronjob (all on a single line):
 * The --target-dir is a git repository
 * The backed-up files will be automatically added / committed to git
 
-<code>15  2   *   *   *   /usr/local/bin/python2.7 /usr/local/bin/drush_backup_git.py</code>
+<code>15  2   *   *   *   /usr/local/bin/python2.7 /usr/local/bin/drush-git-db-backup.py</code>
 <code>--commit --scan-dir=/webapps/ --target-dir=/db_backups/</code>
 <code>-t 1 | mail -s "Drush DB Backup on server123" agileadam@gmail.com</code>
