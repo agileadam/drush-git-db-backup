@@ -8,6 +8,15 @@ This is a python script that scans directories for Drupal sites and uses Drush t
 * Git
 * Python (at least version 2.7)
 
+# Configuration
+The "--structure-tables-key=common" option will be used for the sql-dump operation. This means you can create a drushrc.php file to exclude data from certain tables. See http://drush.ws/examples/example.drushrc.php for more information. I suggest doing this per-site (create sites/all/drush/drushrc.php).
+
+If you don't want any tables to be skipped, either remove that line from my code, or empty the array in your drushrc.php file like this:
+
+<code>$options['structure-tables']['common'] = array();</code>
+
+If you want to exclude data from more than just the "common" tables (cache, watchdog, etc.), simply add table names to the array or create a new array and merge into the default.
+
 # Cronjobs
 One of the main reasons to use a script like this is to have automatic, daily git commits of Drupal site database changes.
 

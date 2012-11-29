@@ -78,6 +78,7 @@ def processDir(dir):
             filename = dbname_search.group(1)
 
     drushdump = subprocess.Popen([drush_app, 'sql-dump', '--ordered-dump', '--nocolor',
+                              '--structure-tables-key=common',
                               '--result-file=' + args.targetdir.rstrip('/') + '/' + filename + '.sql'],
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
