@@ -73,7 +73,9 @@ def processDir(dir):
         drushdb_results = drushdb.stdout.read()
         dbname_search = re.search("\[database\] => (.*)", drushdb_results, re.MULTILINE)
         if dbname_search == None:
-            sys.exit("ERROR: Could not get database name for site at " + dir)
+            print "ERROR: Could not get database name for site at " + dir
+            os.chdir(args.scandir)
+            return
         else:
             filename = dbname_search.group(1)
 
