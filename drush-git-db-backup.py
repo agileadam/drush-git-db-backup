@@ -58,6 +58,25 @@ if args.docommit:
     running this from a cronjob, try setting cron's PATH to include the git \
     application.")
 
+# For stripping color escape sequences from output
+# Without using this drush's red [error] seems to cause the "mail" binary send the "print" output as a file
+ansi_escape = re.compile(r'\x1b[^m]*m')
+
+drush_version_process = subprocess.Popen([drush_app, 'version', '--pipe'],
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT,
+                         )
+
+# If we cannot even get the version there's probably a major problem, so abort.
+drush_version_result = drush_version_process.communicate()[0]
+
+if "[error]" in drush_version_result:
+    print ansi_escape.sub('', drush_version_result)
+    sys.exit("ERROR: Could not detect drush version. Aborting.")
+
+# Set the major version (just the first character, e.g. 6)
+drush_version = drush_version_result[0]
+
 # Process a Drupal directory (dir MUST be a Drupal directory
 # as we're not checking this here!)
 def processDir(dir):
@@ -66,14 +85,17 @@ def processDir(dir):
     if args.usedirname:
         filename = dir.replace('/', '_')
     else:
-        drushdb = subprocess.Popen([drush_app, 'sql-conf'],
+        drushdb = subprocess.Popen([drush_app, 'sql-connect'],
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT,
                                  )
-        drushdb_results = drushdb.stdout.read()
-        dbname_search = re.search("\[database\] => (.*)", drushdb_results, re.MULTILINE)
+        drushdb_results = drushdb.communicate()[0]
+
+        dbname_search = re.search("--database=([a-zA-Z0-9-_]+)", drushdb_results)
         if dbname_search == None:
             print "ERROR: Could not get database name for site at " + dir
+            # There may have been an error, so print the results of the sql-connect command
+            print ansi_escape.sub('', drushdb_results)
             os.chdir(args.scandir)
             return
         else:
@@ -85,10 +107,10 @@ def processDir(dir):
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
                              )
-    results = drushdump.stdout.read()
-    if results:
+    drushdump_results = drushdump.communicate()[0]
+    if drushdump_results:
         if args.verbose:
-            print results
+            print drushdump_results
     os.chdir(args.scandir)
 
 # Clean up the paths to fix any problems we might
@@ -125,7 +147,7 @@ if args.docommit:
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
                              )
-    gitadd_results = gitadd.stdout.read()
+    gitadd_results = gitadd.communicate()[0]
     if gitadd_results:
         if args.verbose:
             print gitadd_results
@@ -135,7 +157,7 @@ if args.docommit:
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
                              )
-    gitcommit_results = gitcommit.stdout.read()
+    gitcommit_results = gitcommit.communicate()[0]
     if gitcommit_results:
         if args.verbose:
             print gitcommit_results
